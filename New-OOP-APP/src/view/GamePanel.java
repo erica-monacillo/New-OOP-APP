@@ -56,7 +56,7 @@ public class GamePanel extends JPanel {
         bottomPanel.add(answerField, BorderLayout.CENTER);
 
         JButton submitButton = new JButton("Submit");
-        submitButton.addActionListener(e -> onSubmit());
+        submitButton.addActionListener(this::onSubmit);
         bottomPanel.add(submitButton, BorderLayout.EAST);
 
         add(bottomPanel, BorderLayout.SOUTH);
@@ -114,7 +114,7 @@ public class GamePanel extends JPanel {
         g2d.drawOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
     }
 
-    private void onSubmit() {
+    private void onSubmit(java.awt.event.ActionEvent e) {
         String userAnswer = selectedLetters.toString();
         System.out.println("User Answer: " + userAnswer);
         System.out.println("Correct Answer: " + controller.getCurrentQuestion().getCorrectAnswer());
