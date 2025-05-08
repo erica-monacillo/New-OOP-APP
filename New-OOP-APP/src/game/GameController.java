@@ -3,43 +3,38 @@ package game;
 import model.CodeQuestion;
 import model.GameLevel;
 import model.Player;
-import view.GamePanel;
+import utils.QuestionLoader;
+
+import java.util.List;
 
 public class GameController {
     private Player player;
-    private GameLevel currentLevel;
-    private GameTimer timer;
+    private List<GameLevel> levels;
+    private int currentLevelIndex;
 
-    public GameController(Player player) {
-        this.player = player;
-        this.timer = new GameTimer(60); // 60 seconds per level
+    public GameController() {
+        this.player = new Player();
+        this.levels = QuestionLoader.loadLevels();
+        this.currentLevelIndex = 0;
     }
 
     public void startLevel(int levelNumber) {
-        this.currentLevel = new GameLevel(levelNumber);
-        timer.reset();
-        timer.start();
-    }
-
-    public boolean checkAnswer(String userAnswer) {
-        boolean isCorrect = currentLevel.checkAnswer(userAnswer);
-        if (isCorrect) {
-            player.incrementScore(currentLevel.getPoints());
-            timer.stop();
-        }
-        return isCorrect;
+        currentLevelIndex = levelNumber;
     }
 
     public CodeQuestion getCurrentQuestion() {
-        return currentLevel.getCurrentQuestion();
+        return levels.get(currentLevelIndex).getQuestion();
     }
 
-    public int getTimeLeft() {
-        return timer.getTimeLeft();
+    public boolean checkAnswer(String answer) {
+        return getCurrentQuestion().isCorrectAnswer(answer.trim());
     }
 
     public Player getPlayer() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPlayer'");
+        return player;
+    }
+
+    public int getNextLevel() {
+        throw new UnsupportedOperationException("Unimplemented method 'getNextLevel'");
     }
 }

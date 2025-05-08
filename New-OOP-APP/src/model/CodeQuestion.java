@@ -3,23 +3,27 @@ package model;
 public class CodeQuestion {
     private String questionText;
     private String correctAnswer;
-    private String explanation;
-    private int difficulty;
+    private String availableLetters;
 
-    public CodeQuestion(String questionText, String correctAnswer, String explanation, int difficulty) {
+    public CodeQuestion(String questionText, String correctAnswer, String availableLetters) {
         this.questionText = questionText;
         this.correctAnswer = correctAnswer;
-        this.explanation = explanation;
-        this.difficulty = difficulty;
+        this.availableLetters = availableLetters;
     }
 
-    // Getters
-    public String getQuestionText() { return questionText; }
-    public String getCorrectAnswer() { return correctAnswer; }
-    public String getExplanation() { return explanation; }
-    public int getDifficulty() { return difficulty; }
+    public String getQuestionText() {
+        return questionText;
+    }
 
-    public boolean checkAnswer(String userAnswer) {
-        return correctAnswer.equalsIgnoreCase(userAnswer.trim());
+    public String getAvailableLetters() {
+        return availableLetters;
+    }
+
+    public boolean isCorrectAnswer(String answer) {
+        return correctAnswer.equals(answer);
+    }
+
+    public String getCorrectAnswer() {
+        throw new UnsupportedOperationException("Unimplemented method 'getCorrectAnswer'");
     }
 }
