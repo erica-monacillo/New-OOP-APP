@@ -159,7 +159,9 @@ public class GamePanel extends JPanel {
         @Override
         public void mouseReleased(MouseEvent e) {
             // Stop dragging
-            visitedButtons.clear();
+            visitedButtons.clear(); // Clear visited buttons
+            selectedLetters.setLength(0); // Clear the selected letters
+            answerField.setText(""); // Clear the answer field
         }
     }
 }
