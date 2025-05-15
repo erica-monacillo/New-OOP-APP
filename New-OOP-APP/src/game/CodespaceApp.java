@@ -1,8 +1,11 @@
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+package game;
+
 import view.GameFrame;
 
-public class Main {
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+public class CodespaceApp {
     public static void main(String[] args) {
         try {
             // Set system look and feel
