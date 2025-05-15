@@ -357,8 +357,12 @@ public class GamePanel extends JPanel {
             feedbackLabel.setForeground(Color.RED);
             feedbackLabel.setVisible(true);
             
-            // Optional: penalize wrong answers
-            controller.awardPoints(-2); // Deduct 2 points for wrong answer
+            // Only deduct points if score is above zero
+            int currentScore = controller.getPlayer().getScore();
+            if (currentScore > 0) {
+                int deduction = Math.min(2, currentScore);
+                controller.awardPoints(-deduction);
+            }
             updateScoreDisplay();
             
             // Hide feedback after 1.5 seconds
@@ -516,8 +520,12 @@ public class GamePanel extends JPanel {
                     feedbackLabel.setVisible(true);
                     feedbackLabel.setFont(new Font("Arial", Font.BOLD, 14));
                     
-                    // Optional: penalize wrong answers
-                    controller.awardPoints(-2); // Deduct 2 points for wrong answer
+                    // Only deduct points if score is above zero
+                    int currentScore = controller.getPlayer().getScore();
+                    if (currentScore > 0) {
+                        int deduction = Math.min(2, currentScore);
+                        controller.awardPoints(-deduction);
+                    }
                     updateScoreDisplay();
                     
                     // Hide feedback after 1.5 seconds
