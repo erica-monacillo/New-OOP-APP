@@ -152,9 +152,9 @@ public class MainMenu extends JPanel {
     
     private void showAboutDialog() {
         String aboutMessage = 
-            "Codespace - A word puzzle game with programming themes\n\n" +
+            "Codespace - A word puzzle  programming game\n\n" +
             "Create words from available letters to solve coding challenges.\n" +
-            "© 2025 Codespace Team";
+            "© 2025 Codespace Team wow";
             
         JOptionPane.showMessageDialog(
             parentFrame,
