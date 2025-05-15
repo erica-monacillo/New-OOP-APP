@@ -26,6 +26,7 @@ public class GamePanel extends JPanel {
     private Point dragEnd;
     private boolean isDragging = false;
     private List<Point> dragPath = new ArrayList<>();
+    private boolean isMousePressed = false;
 
     public GamePanel(GameController controller) {
         this.controller = controller;
@@ -39,13 +40,10 @@ public class GamePanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.DARK_GRAY);
 
-    // Initialize score label
-    scoreLabel = new JLabel("Score: " + score, SwingConstants.LEFT);
-    scoreLabel.setFont(new Font("Arial", Font.BOLD, 14));
-    scoreLabel.setForeground(Color.LIGHT_GRAY);
-    scoreLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-        // Initialize question label
+        scoreLabel = new JLabel("Score: " + score, SwingConstants.LEFT);
+        scoreLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        scoreLabel.setForeground(Color.LIGHT_GRAY);
+        scoreLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         questionLabel = new JLabel("", SwingConstants.CENTER);
         questionLabel.setFont(new Font("Arial", Font.BOLD, 16));
         questionLabel.setForeground(Color.WHITE);
@@ -83,6 +81,15 @@ public class GamePanel extends JPanel {
         letterCirclePanel.setBackground(new Color(30, 30, 30));
         add(letterCirclePanel, BorderLayout.CENTER);
 
+        letterCirclePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (isMousePressed) {
+                    finishSelection();
+                }
+            }
+        });
+
         // Answer field and submit button at the bottom
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(new Color(30, 30, 30));
@@ -113,10 +120,26 @@ public class GamePanel extends JPanel {
             feedbackLabel.setText("");
             dragPath.clear();
             letterCirclePanel.repaint();
+            resetAllButtonColors();
         });
         bottomPanel.add(clearButton, BorderLayout.WEST);
 
         add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    private void resetAllButtonColors() {
+        for (JButton button : letterButtons) {
+            button.setBackground(new Color(50, 50, 50));
+        }
+    }
+
+    private void finishSelection() {
+        isMousePressed = false;
+        isDragging = false;
+        dragPath.clear();
+        dragStart = null;
+        dragEnd = null;
+        letterCirclePanel.repaint();
     }
 
     private void drawDragLine(Graphics g) {
@@ -186,6 +209,8 @@ public class GamePanel extends JPanel {
         dragPath.clear();
         dragStart = null;
         dragEnd = null;
+        isMousePressed = false;
+        isDragging = false;
 
         int radius = 150;
         int centerX = letterCirclePanel.getWidth() / 2;
@@ -212,8 +237,12 @@ public class GamePanel extends JPanel {
             letterButton.setBackground(new Color(50, 50, 50));
             letterButton.setForeground(Color.WHITE);
             letterButton.setFocusPainted(false);
-            letterButton.addMouseListener(new DragMouseListener(letterButton, letter, i));
-            letterButton.addMouseListener(new HoverEffectListener(letterButton));
+            
+            // Add modified mouse listeners
+            LetterButtonListener buttonListener = new LetterButtonListener(letterButton, letter);
+            letterButton.addMouseListener(buttonListener);
+            letterButton.addMouseMotionListener(buttonListener);
+            
             letterButtons.add(letterButton);
             letterCirclePanel.add(letterButton);
         }
@@ -269,84 +298,84 @@ public class GamePanel extends JPanel {
         return score;
     }
 
-    private class DragMouseListener extends MouseAdapter {
+    private class LetterButtonListener extends MouseAdapter {
         private JButton button;
         private char letter;
-        private int position;
-        private Point originalPosition;
 
-        public DragMouseListener(JButton button, char letter, int position) {
+        public LetterButtonListener(JButton button, char letter) {
             this.button = button;
             this.letter = letter;
-            this.position = position;
-            this.originalPosition = button.getLocation();
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
-            if (!visitedButtons.contains(button)) {
-                Point center = new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2);
-                dragStart = center;
-                dragEnd = center;
-                dragPath.clear();
-                dragPath.add(center);
-                visitedButtons.add(button);
-                selectedLetters.append(letter);
-                button.setBackground(Color.RED);
-                updateQuestionDisplay();
-                letterCirclePanel.repaint();
-            }
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            if (dragStart != null) {
-                dragEnd = e.getPoint();
-                letterCirclePanel.repaint();
-            }
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
+            // Start the selection process
+            isMousePressed = true;
+            isDragging = true;
+            
+            // Clear previous selection
+            selectedLetters.setLength(0);
+            visitedButtons.clear();
             dragPath.clear();
-            dragStart = null;
-            dragEnd = null;
+            resetAllButtonColors();
+            
+            // Add this button as first selection
+            selectButton();
+            
+            // Update drag points
+            Point center = new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2);
+            dragStart = center;
+            dragEnd = center;
+            dragPath.add(center);
+            
+            updateQuestionDisplay();
             letterCirclePanel.repaint();
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            if (!visitedButtons.contains(button)) {
-                visitedButtons.add(button);
-                selectedLetters.append(letter);
-                button.setBackground(new Color(70, 130, 180));
+            if (isMousePressed && !visitedButtons.contains(button)) {
+                // Add this letter to selection when hovering while pressed
+                selectButton();
+                
+                // Update drag path
                 Point center = new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2);
                 dragPath.add(center);
+                dragEnd = center;
+                
                 updateQuestionDisplay();
                 letterCirclePanel.repaint();
-            }
-        }
-    }
-
-    private class HoverEffectListener extends MouseAdapter {
-        private JButton button;
-
-        public HoverEffectListener(JButton button) {
-            this.button = button;
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            if (!visitedButtons.contains(button)) {
+            } else if (!isMousePressed) {
+                // Just hover effect when not pressed
                 button.setBackground(new Color(100, 100, 100));
             }
         }
-
+        
         @Override
         public void mouseExited(MouseEvent e) {
-            if (!visitedButtons.contains(button)) {
+            if (!visitedButtons.contains(button) && !isMousePressed) {
                 button.setBackground(new Color(50, 50, 50));
             }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            finishSelection();
+        }
+        
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (isDragging) {
+                // Update the drag end point for drawing the line
+                dragEnd = SwingUtilities.convertPoint(button, e.getPoint(), letterCirclePanel);
+                letterCirclePanel.repaint();
+            }
+        }
+        
+        private void selectButton() {
+            button.setBackground(Color.RED);
+            visitedButtons.add(button);
+            selectedLetters.append(letter);
         }
     }
 }
