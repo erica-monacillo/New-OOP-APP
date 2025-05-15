@@ -195,6 +195,7 @@ public class GamePanel extends JPanel {
         CodeQuestion question = controller.getCurrentQuestion();
         setupLetterCircle(question.getAvailableLetters());
         updateQuestionDisplay();
+        resetSelection(); // Reset the selection state for the new level
     }
 
     private void updateQuestionDisplay() {
@@ -273,14 +274,16 @@ public class GamePanel extends JPanel {
             feedbackLabel.setText("Correct!");
             feedbackLabel.setForeground(Color.GREEN);
             
-            // Increment score
-            score += 10;
+            // Award points to the player
+            controller.awardPoints(10); // Award 10 points for correct answer
+            
+            // Update score display
             updateScoreDisplay();
-
-            // Optional: delay next level by 1 second
+            
+            // Delay next level by 1 second
             Timer timer = new Timer(1000, evt -> {
                 startLevel(controller.getNextLevel());
-                feedbackLabel.setText(""); // Clear after next level starts
+                feedbackLabel.setText(""); // Clear feedback after next level starts
             });
             timer.setRepeats(false);
             timer.start();
@@ -289,19 +292,14 @@ public class GamePanel extends JPanel {
             feedbackLabel.setForeground(Color.RED);
             
             // Optional: penalize wrong answers
-            score = Math.max(0, score - 2);  // Prevent negative scores
+            controller.awardPoints(-2); // Deduct 2 points for wrong answer
             updateScoreDisplay();
         }
     }
     
     // Method to update the score display
     private void updateScoreDisplay() {
-        scoreLabel.setText("Score: " + score);
-    }
-
-    // Method to get the current score (can be used by other classes)
-    public int getScore() {
-        return score;
+        scoreLabel.setText("Score: " + controller.getPlayer().getScore());
     }
 
     // Custom round button class
@@ -416,7 +414,11 @@ public class GamePanel extends JPanel {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            finishSelection();
+            if (isMousePressed) {
+                finishSelection();
+                // Automatically submit the answer when selection is complete
+                onSubmit(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "submit"));
+            }
         }
         
         @Override
