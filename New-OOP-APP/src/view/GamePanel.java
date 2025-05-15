@@ -54,6 +54,10 @@ public class GamePanel extends JPanel {
         questionLabel.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180), 2));
         questionLabel.setVerticalAlignment(SwingConstants.CENTER);
         questionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        // Make question label wrap text
+        questionLabel.setPreferredSize(new Dimension(400, 100));
+        questionLabel.setMinimumSize(new Dimension(200, 50));
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(new Color(50, 50, 50));
@@ -62,12 +66,12 @@ public class GamePanel extends JPanel {
 
         add(topPanel, BorderLayout.NORTH);
 
-        // Feedback label
+        // Feedback label with new styling
         feedbackLabel = new JLabel("", SwingConstants.CENTER);
-        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        feedbackLabel.setForeground(Color.YELLOW);
+        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        feedbackLabel.setForeground(Color.WHITE);
         feedbackLabel.setOpaque(false);
-        add(feedbackLabel, BorderLayout.AFTER_LAST_LINE);
+        feedbackLabel.setVisible(false);
 
         // Circle of letters in the center
         letterCirclePanel = new JPanel() {
@@ -85,58 +89,31 @@ public class GamePanel extends JPanel {
                 if (!letterButtons.isEmpty()) {
                     setupLetterCircle(controller.getCurrentQuestion().getAvailableLetters());
                 }
+                // Update feedback label position
+                if (feedbackLabel != null) {
+                    feedbackLabel.setBounds(0, 0, getWidth(), getHeight());
+                    feedbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                    feedbackLabel.setVerticalAlignment(SwingConstants.CENTER);
+                }
             }
         };
         letterCirclePanel.setPreferredSize(new Dimension(400, 400));
         letterCirclePanel.setLayout(null);
         letterCirclePanel.setBackground(new Color(30, 30, 30));
+        
+        // Add feedback label to letter circle panel
+        letterCirclePanel.add(feedbackLabel);
+        feedbackLabel.setBounds(0, 0, letterCirclePanel.getWidth(), letterCirclePanel.getHeight());
+        feedbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        feedbackLabel.setVerticalAlignment(SwingConstants.CENTER);
+        
         add(letterCirclePanel, BorderLayout.CENTER);
-
-        letterCirclePanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (isMousePressed) {
-                    finishSelection();
-                }
-            }
-        });
-
-        // Answer field and submit button at the bottom
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.setBackground(new Color(30, 30, 30));
-
-        answerField = new JTextField();
-        answerField.setEditable(false);
-        answerField.setBackground(new Color(40, 40, 40));
-        answerField.setForeground(Color.WHITE);
-        answerField.setCaretColor(Color.WHITE);
-        answerField.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180)));
-        bottomPanel.add(answerField, BorderLayout.CENTER);
-
-        JButton submitButton = new JButton("Submit");
-        submitButton.setBackground(new Color(70, 130, 180));
-        submitButton.setForeground(Color.WHITE);
-        submitButton.setFocusPainted(false);
-        submitButton.addActionListener(this::onSubmit);
-        bottomPanel.add(submitButton, BorderLayout.EAST);
-
-        JButton clearButton = new JButton("Clear");
-        clearButton.setBackground(new Color(100, 100, 100));
-        clearButton.setForeground(Color.WHITE);
-        clearButton.setFocusPainted(false);
-        clearButton.addActionListener(evt -> {
-            resetSelection();
-        });
-        bottomPanel.add(clearButton, BorderLayout.WEST);
-
-        add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private void resetSelection() {
         selectedLetters.setLength(0);
         visitedButtons.clear();
-        answerField.setText("");
-        feedbackLabel.setText("");
+        feedbackLabel.setVisible(false);
         dragPath.clear();
         selectionActive = false;
         isMousePressed = false;
@@ -238,8 +215,14 @@ public class GamePanel extends JPanel {
         
         // Format the text with proper spacing and line breaks
         displayText = displayText.replace("\n", "<br>");
-        questionLabel.setText("<html><pre style='color: white; font-family: monospace; font-size: 14px;'>" + displayText + "</pre></html>");
-        answerField.setText(selectedLetters.toString());
+        
+        // Create a word-wrapped display with proper formatting
+        String formattedText = "<html><div style='width: 100%;'>" +
+                             "<div style='color: white; font-family: monospace; font-size: 14px; " +
+                             "white-space: normal; word-wrap: break-word; text-align: left; padding: 10px;'>" + 
+                             displayText + "</div></div></html>";
+        
+        questionLabel.setText(formattedText);
         letterCirclePanel.repaint();
     }
 
@@ -308,9 +291,14 @@ public class GamePanel extends JPanel {
             letterCirclePanel.add(letterButton);
         }
 
+        // Add feedback label and center it
+        letterCirclePanel.add(feedbackLabel);
+        feedbackLabel.setBounds(0, 0, letterCirclePanel.getWidth(), letterCirclePanel.getHeight());
+        feedbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        feedbackLabel.setVerticalAlignment(SwingConstants.CENTER);
+
         letterCirclePanel.revalidate();
         letterCirclePanel.repaint();
-        updateQuestionDisplay();
     }
 
     private void drawLetterCircle(Graphics g) {
@@ -349,6 +337,7 @@ public class GamePanel extends JPanel {
         if (controller.checkAnswer(userAnswer)) {
             feedbackLabel.setText("Correct!");
             feedbackLabel.setForeground(Color.GREEN);
+            feedbackLabel.setVisible(true);
             
             // Award points to the player
             controller.awardPoints(10); // Award 10 points for correct answer
@@ -359,17 +348,25 @@ public class GamePanel extends JPanel {
             // Delay next level by 1 second
             Timer timer = new Timer(1000, evt -> {
                 startLevel(controller.getNextLevel());
-                feedbackLabel.setText(""); // Clear feedback after next level starts
+                feedbackLabel.setVisible(false); // Hide feedback after next level starts
             });
             timer.setRepeats(false);
             timer.start();
         } else {
             feedbackLabel.setText("Incorrect. Try again.");
             feedbackLabel.setForeground(Color.RED);
+            feedbackLabel.setVisible(true);
             
             // Optional: penalize wrong answers
             controller.awardPoints(-2); // Deduct 2 points for wrong answer
             updateScoreDisplay();
+            
+            // Hide feedback after 1.5 seconds
+            Timer timer = new Timer(1500, evt -> {
+                feedbackLabel.setVisible(false);
+            });
+            timer.setRepeats(false);
+            timer.start();
         }
     }
     
@@ -492,8 +489,44 @@ public class GamePanel extends JPanel {
         public void mouseReleased(MouseEvent e) {
             if (isMousePressed) {
                 finishSelection();
-                // Automatically submit the answer when selection is complete
-                onSubmit(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "submit"));
+                // Check the answer
+                String userAnswer = selectedLetters.toString();
+                if (controller.checkAnswer(userAnswer)) {
+                    feedbackLabel.setText("Correct!");
+                    feedbackLabel.setForeground(Color.GREEN);
+                    feedbackLabel.setVisible(true);
+                    feedbackLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                    
+                    // Award points to the player
+                    controller.awardPoints(10); // Award 10 points for correct answer
+                    
+                    // Update score display
+                    updateScoreDisplay();
+                    
+                    // Delay next level by 1 second
+                    Timer timer = new Timer(1000, evt -> {
+                        int nextLevel = controller.getNextLevel();
+                        startLevel(nextLevel);
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                } else {
+                    feedbackLabel.setText("Incorrect!");
+                    feedbackLabel.setForeground(Color.RED);
+                    feedbackLabel.setVisible(true);
+                    feedbackLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                    
+                    // Optional: penalize wrong answers
+                    controller.awardPoints(-2); // Deduct 2 points for wrong answer
+                    updateScoreDisplay();
+                    
+                    // Hide feedback after 1.5 seconds
+                    Timer timer = new Timer(1500, evt -> {
+                        feedbackLabel.setVisible(false);
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
             }
         }
         

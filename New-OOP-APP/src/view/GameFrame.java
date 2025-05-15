@@ -14,7 +14,7 @@ public class GameFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 700);
         setLocationRelativeTo(null);
-        setResizable(false);
+        setResizable(true); 
         
         // Initialize the controller
         controller = new GameController();
