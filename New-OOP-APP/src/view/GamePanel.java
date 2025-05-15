@@ -130,13 +130,15 @@ public class GamePanel extends JPanel {
         g2d.drawLine(dragStart.x, dragStart.y, dragEnd.x, dragEnd.y);
         
         // Draw the path points with a glowing effect
-        g2d.setColor(new Color(100, 149, 237, 200));
         for (Point p : dragPath) {
             // Draw outer glow
-            g2d.setColor(new Color(100, 149, 237, 100));
+            g2d.setColor(new Color(70, 130, 180, 100));
+            g2d.fillOval(p.x - 12, p.y - 12, 24, 24);
+            // Draw middle glow
+            g2d.setColor(new Color(70, 130, 180, 150));
             g2d.fillOval(p.x - 8, p.y - 8, 16, 16);
             // Draw inner point
-            g2d.setColor(new Color(100, 149, 237, 200));
+            g2d.setColor(new Color(70, 130, 180, 200));
             g2d.fillOval(p.x - 4, p.y - 4, 8, 8);
         }
     }
@@ -249,6 +251,7 @@ public class GamePanel extends JPanel {
                 dragPath.add(dragStart);
                 visitedButtons.add(button);
                 selectedLetters.append(letter);
+                button.setBackground(new Color(70, 130, 180));
                 updateQuestionDisplay();
                 letterCirclePanel.repaint();
             }
@@ -271,6 +274,7 @@ public class GamePanel extends JPanel {
             if (!visitedButtons.contains(button)) {
                 visitedButtons.add(button);
                 selectedLetters.append(letter);
+                button.setBackground(new Color(70, 130, 180));
                 dragPath.add(new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2));
                 updateQuestionDisplay();
                 letterCirclePanel.repaint();
