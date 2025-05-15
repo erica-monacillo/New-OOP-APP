@@ -54,6 +54,10 @@ public class GamePanel extends JPanel {
         questionLabel.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180), 2));
         questionLabel.setVerticalAlignment(SwingConstants.CENTER);
         questionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        // Make question label wrap text
+        questionLabel.setPreferredSize(new Dimension(400, 100));
+        questionLabel.setMinimumSize(new Dimension(200, 50));
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(new Color(50, 50, 50));
@@ -238,7 +242,14 @@ public class GamePanel extends JPanel {
         
         // Format the text with proper spacing and line breaks
         displayText = displayText.replace("\n", "<br>");
-        questionLabel.setText("<html><pre style='color: white; font-family: monospace; font-size: 14px;'>" + displayText + "</pre></html>");
+        
+        // Create a word-wrapped display with proper formatting
+        String formattedText = "<html><div style='width: 100%;'>" +
+                             "<div style='color: white; font-family: monospace; font-size: 14px; " +
+                             "white-space: normal; word-wrap: break-word; text-align: left; padding: 10px;'>" + 
+                             displayText + "</div></div></html>";
+        
+        questionLabel.setText(formattedText);
         answerField.setText(selectedLetters.toString());
         letterCirclePanel.repaint();
     }
