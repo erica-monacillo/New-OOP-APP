@@ -37,7 +37,7 @@ public class GamePanel extends JPanel {
     setBackground(Color.DARK_GRAY); // Dark mode background
 
     // Initialize score label
-    scoreLabel = new JLabel("Score: 0", SwingConstants.LEFT);
+    scoreLabel = new JLabel("Score: " + score, SwingConstants.LEFT);
     scoreLabel.setFont(new Font("Arial", Font.BOLD, 14));
     scoreLabel.setForeground(Color.LIGHT_GRAY);
     scoreLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
@@ -168,24 +168,41 @@ public class GamePanel extends JPanel {
     }
 
     private void onSubmit(java.awt.event.ActionEvent e) {
-    String userAnswer = selectedLetters.toString();
-    if (controller.checkAnswer(userAnswer)) {
-        feedbackLabel.setText("Correct!");
-        feedbackLabel.setForeground(Color.GREEN);
+        String userAnswer = selectedLetters.toString();
+        if (controller.checkAnswer(userAnswer)) {
+            feedbackLabel.setText("Correct!");
+            feedbackLabel.setForeground(Color.GREEN);
+            
+            // Increment score
+            score += 10;
+            updateScoreDisplay();
 
-        // Optional: delay next level by 1 second
-        Timer timer = new Timer(1000, evt -> {
-            startLevel(controller.getNextLevel());
-            feedbackLabel.setText(""); // Clear after next level starts
-        });
-        timer.setRepeats(false);
-        timer.start();
-    } else {
-        feedbackLabel.setText("Incorrect. Try again.");
-        feedbackLabel.setForeground(Color.RED);
+            // Optional: delay next level by 1 second
+            Timer timer = new Timer(1000, evt -> {
+                startLevel(controller.getNextLevel());
+                feedbackLabel.setText(""); // Clear after next level starts
+            });
+            timer.setRepeats(false);
+            timer.start();
+        } else {
+            feedbackLabel.setText("Incorrect. Try again.");
+            feedbackLabel.setForeground(Color.RED);
+            
+            // Optional: penalize wrong answers
+            score = Math.max(0, score - 2);  // Prevent negative scores
+            updateScoreDisplay();
+        }
     }
-}
+    
+    // Method to update the score display
+    private void updateScoreDisplay() {
+        scoreLabel.setText("Score: " + score);
+    }
 
+    // Method to get the current score (can be used by other classes)
+    public int getScore() {
+        return score;
+    }
 
     private class DragMouseListener extends MouseAdapter {
         private JButton button;

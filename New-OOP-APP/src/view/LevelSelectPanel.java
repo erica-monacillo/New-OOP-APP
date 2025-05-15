@@ -44,7 +44,7 @@ public class LevelSelectPanel extends JPanel {
             // Style buttons differently based on completion status
             styleLevelButton(levelButtons[i], level);
 
-            levelButtons[i].addActionListener(_ -> {
+            levelButtons[i].addActionListener(e -> {
                 controller.startLevel(level);
                 ((GameFrame)SwingUtilities.getWindowAncestor(this)).showGameScreen();
             });
@@ -58,6 +58,7 @@ public class LevelSelectPanel extends JPanel {
     }
 
     private void styleLevelButton(JButton button, int level) {
+        // Using the correct method getPlayer() instead of getCurrentPlayer()
         Player player = controller.getPlayer();
         
         if (level <= player.getCurrentLevel()) {
@@ -78,7 +79,9 @@ public class LevelSelectPanel extends JPanel {
     }
 
     public void updatePlayerInfo() {
+        // Using the correct method getPlayer() instead of getCurrentPlayer()
         Player player = controller.getPlayer();
+        
         playerInfoLabel.setText("Player: " + player.getName() + " | Score: " + player.getScore() + 
                               " | Highest Level: " + player.getCurrentLevel());
 
