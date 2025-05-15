@@ -6,6 +6,7 @@ import model.CodeQuestion;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,9 +17,9 @@ public class GamePanel extends JPanel {
     private JLabel questionLabel;
     private JPanel letterCirclePanel;
     private JTextField answerField;
-    private List<JButton> letterButtons;
+    private List<RoundButton> letterButtons;
     private StringBuilder selectedLetters;
-    private Set<JButton> visitedButtons;
+    private Set<RoundButton> visitedButtons;
     private JLabel feedbackLabel;
     private JLabel scoreLabel;
     private int score = 0;
@@ -134,7 +135,7 @@ public class GamePanel extends JPanel {
     }
 
     private void resetAllButtonColors() {
-        for (JButton button : letterButtons) {
+        for (RoundButton button : letterButtons) {
             button.setBackground(new Color(50, 50, 50));
         }
     }
@@ -236,7 +237,7 @@ public class GamePanel extends JPanel {
             char letter = letters.charAt(i);
             Point pos = positions.get(i);
 
-            JButton letterButton = new JButton(String.valueOf(letter));
+            RoundButton letterButton = new RoundButton(String.valueOf(letter));
             letterButton.setBounds(pos.x, pos.y, 50, 50);
             letterButton.setFont(new Font("Arial", Font.BOLD, 20));
             letterButton.setBackground(new Color(50, 50, 50));
@@ -303,11 +304,65 @@ public class GamePanel extends JPanel {
         return score;
     }
 
+    // Custom round button class
+    private class RoundButton extends JButton {
+        public RoundButton(String label) {
+            super(label);
+            setContentAreaFilled(false);
+            setFocusPainted(false);
+            setBorderPainted(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            if (getModel().isPressed()) {
+                g2.setColor(getBackground().darker());
+            } else if (getModel().isRollover()) {
+                g2.setColor(getBackground().brighter());
+            } else {
+                g2.setColor(getBackground());
+            }
+            
+            g2.fillOval(0, 0, getWidth(), getHeight());
+            
+            // Draw text
+            FontMetrics metrics = g2.getFontMetrics(getFont());
+            Rectangle2D stringBounds = metrics.getStringBounds(getText(), g2);
+            int x = (getWidth() - (int) stringBounds.getWidth()) / 2;
+            int y = (getHeight() - (int) stringBounds.getHeight()) / 2 + metrics.getAscent();
+            
+            g2.setColor(getForeground());
+            g2.setFont(getFont());
+            g2.drawString(getText(), x, y);
+            g2.dispose();
+        }
+
+        @Override
+        public boolean contains(int x, int y) {
+            if (getModel().isRollover()) {
+                return super.contains(x, y);
+            } else {
+                int radius = Math.min(getWidth(), getHeight()) / 2;
+                return Point.distance(x, y, getWidth() / 2, getHeight() / 2) <= radius;
+            }
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension size = super.getPreferredSize();
+            int diameter = Math.max(size.width, size.height);
+            return new Dimension(diameter, diameter);
+        }
+    }
+
     private class LetterButtonListener extends MouseAdapter {
-        private JButton button;
+        private RoundButton button;
         private char letter;
 
-        public LetterButtonListener(JButton button, char letter) {
+        public LetterButtonListener(RoundButton button, char letter) {
             this.button = button;
             this.letter = letter;
         }
