@@ -212,8 +212,12 @@ public class GamePanel extends JPanel {
             String selectedText = selectedLetters.toString();
             if (selectedText.isEmpty()) {
                 // Show blank lines when no letters are selected
+                // Calculate the width based on the expected answer length
+                String expectedAnswer = question.getAnswer();
+                int blankWidth = Math.max(4, expectedAnswer.length()); // Minimum 4 characters
+                String blankSpace = "_".repeat(blankWidth);
                 displayText = displayText.substring(0, underscoreIndex) + 
-                             "<span style='color: #666666; border-bottom: 2px solid #666666;'>____</span>" + 
+                             "<span style='color: #666666; border-bottom: 2px solid #666666;'>" + blankSpace + "</span>" + 
                              displayText.substring(underscoreIndex + 4);
             } else {
                 // Show selected letters with a different style
@@ -248,6 +252,14 @@ public class GamePanel extends JPanel {
         // Calculate positions first to ensure consistent placement
         List<Point> positions = new ArrayList<>();
         double angleStep = 2 * Math.PI / letters.length();
+        
+        // Adjust radius based on number of letters
+        if (letters.length() > 12) {
+            radius = 220; // Larger radius for more letters
+        } else if (letters.length() < 4) {
+            radius = 120; // Smaller radius for fewer letters
+        }
+
         for (int i = 0; i < letters.length(); i++) {
             double angle = i * angleStep;
             int x = (int) (centerX + radius * Math.cos(angle)) - 25;
@@ -278,16 +290,27 @@ public class GamePanel extends JPanel {
 
         letterCirclePanel.revalidate();
         letterCirclePanel.repaint();
-        updateQuestionDisplay(); // Update display after setting up new letters
+        updateQuestionDisplay();
     }
 
     private void drawLetterCircle(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(70, 130, 180));
-        g2d.setStroke(new BasicStroke(3));
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        // Draw the circle with a responsive radius
         int centerX = letterCirclePanel.getWidth() / 2;
         int centerY = letterCirclePanel.getHeight() / 2;
         int radius = 150;
+        
+        // Adjust radius based on number of letters
+        if (letterButtons.size() > 8) {
+            radius = 180;
+        } else if (letterButtons.size() < 4) {
+            radius = 120;
+        }
+        
+        g2d.setColor(new Color(70, 130, 180));
+        g2d.setStroke(new BasicStroke(3));
         g2d.drawOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
     }
 
