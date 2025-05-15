@@ -75,7 +75,16 @@ public class GamePanel extends JPanel {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 drawLetterCircle(g);
-                drawSelectionLines(g);  // Always draw the selection lines
+                drawSelectionLines(g);
+            }
+
+            @Override
+            public void doLayout() {
+                super.doLayout();
+                // Recalculate positions when the panel is resized
+                if (!letterButtons.isEmpty()) {
+                    setupLetterCircle(controller.getCurrentQuestion().getAvailableLetters());
+                }
             }
         };
         letterCirclePanel.setPreferredSize(new Dimension(400, 400));
@@ -245,20 +254,31 @@ public class GamePanel extends JPanel {
         isDragging = false;
         selectionActive = false;
 
-        int radius = 150;
-        int centerX = letterCirclePanel.getWidth() / 2;
-        int centerY = letterCirclePanel.getHeight() / 2;
+        // Get the panel dimensions
+        int panelWidth = letterCirclePanel.getWidth();
+        int panelHeight = letterCirclePanel.getHeight();
+        
+        // Calculate center point
+        int centerX = panelWidth / 2;
+        int centerY = panelHeight / 2;
 
         // Calculate positions first to ensure consistent placement
         List<Point> positions = new ArrayList<>();
         double angleStep = 2 * Math.PI / letters.length();
         
         // Adjust radius based on number of letters
+        int radius;
         if (letters.length() > 12) {
             radius = 220; // Larger radius for more letters
         } else if (letters.length() < 4) {
             radius = 120; // Smaller radius for fewer letters
+        } else {
+            radius = 150; // Default radius
         }
+
+        // Ensure the circle fits within the panel
+        int maxRadius = Math.min(panelWidth, panelHeight) / 2 - 30; // Leave some margin
+        radius = Math.min(radius, maxRadius);
 
         for (int i = 0; i < letters.length(); i++) {
             double angle = i * angleStep;
@@ -297,17 +317,27 @@ public class GamePanel extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        // Draw the circle with a responsive radius
-        int centerX = letterCirclePanel.getWidth() / 2;
-        int centerY = letterCirclePanel.getHeight() / 2;
-        int radius = 150;
+        // Get the panel dimensions
+        int panelWidth = letterCirclePanel.getWidth();
+        int panelHeight = letterCirclePanel.getHeight();
         
-        // Adjust radius based on number of letters
-        if (letterButtons.size() > 8) {
-            radius = 180;
+        // Calculate center point
+        int centerX = panelWidth / 2;
+        int centerY = panelHeight / 2;
+        
+        // Calculate radius based on number of letters
+        int radius;
+        if (letterButtons.size() > 12) {
+            radius = 220;
         } else if (letterButtons.size() < 4) {
             radius = 120;
+        } else {
+            radius = 150;
         }
+
+        // Ensure the circle fits within the panel
+        int maxRadius = Math.min(panelWidth, panelHeight) / 2 - 30; // Leave some margin
+        radius = Math.min(radius, maxRadius);
         
         g2d.setColor(new Color(70, 130, 180));
         g2d.setStroke(new BasicStroke(3));
