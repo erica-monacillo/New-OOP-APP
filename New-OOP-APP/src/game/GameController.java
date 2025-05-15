@@ -1,40 +1,35 @@
 package game;
 
 import model.CodeQuestion;
-import model.GameLevel;
-import model.Player;
-import utils.QuestionLoader;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameController {
-    private Player player;
-    private List<GameLevel> levels;
-    private int currentLevelIndex;
+    private List<CodeQuestion> questions;
+    private int currentLevel = 0;
 
     public GameController() {
-        this.player = new Player();
-        this.levels = QuestionLoader.loadLevels();
-        this.currentLevelIndex = 0;
+        questions = new ArrayList<>();
+        questions.add(new CodeQuestion("System.out.println(\"Hello, ____!\");", "world"));
+        questions.add(new CodeQuestion("for(int i = 0; i < __; i++)", "10"));
+        questions.add(new CodeQuestion("String name = \"__\";", "java"));
     }
 
     public void startLevel(int levelNumber) {
-        currentLevelIndex = levelNumber;
+        currentLevel = levelNumber;
     }
 
     public CodeQuestion getCurrentQuestion() {
-        return levels.get(currentLevelIndex).getQuestion();
+        return questions.get(currentLevel);
     }
 
     public boolean checkAnswer(String answer) {
-        return getCurrentQuestion().isCorrectAnswer(answer.trim());
-    }
-
-    public Player getPlayer() {
-        return player;
+        return getCurrentQuestion().getAnswer().equalsIgnoreCase(answer);
     }
 
     public int getNextLevel() {
-        throw new UnsupportedOperationException("Unimplemented method 'getNextLevel'");
+        currentLevel++;
+        if (currentLevel >= questions.size()) currentLevel = 0;
+        return currentLevel;
     }
 }

@@ -1,29 +1,43 @@
 package model;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
+
 public class CodeQuestion {
     private String questionText;
-    private String correctAnswer;
-    private String availableLetters;
+    private String answer;
 
-    public CodeQuestion(String questionText, String correctAnswer, String availableLetters) {
+    public CodeQuestion(String questionText, String answer) {
         this.questionText = questionText;
-        this.correctAnswer = correctAnswer;
-        this.availableLetters = availableLetters;
+        this.answer = answer;
     }
 
     public String getQuestionText() {
         return questionText;
     }
 
+    public String getAnswer() {
+        return answer;
+    }
+
     public String getAvailableLetters() {
-        return availableLetters;
-    }
+        List<Character> chars = new ArrayList<>();
+        for (char c : answer.toCharArray()) {
+            chars.add(c);
+        }
 
-    public boolean isCorrectAnswer(String answer) {
-        return correctAnswer.equals(answer);
-    }
+        // Add extra random letters
+        for (char c : "xyzqwe".toCharArray()) {
+            chars.add(c);
+        }
 
-    public String getCorrectAnswer() {
-        throw new UnsupportedOperationException("Unimplemented method 'getCorrectAnswer'");
+        Collections.shuffle(chars);
+        StringBuilder shuffled = new StringBuilder();
+        for (char c : chars) {
+            shuffled.append(c);
+        }
+
+        return shuffled.toString();
     }
 }
