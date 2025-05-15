@@ -123,22 +123,40 @@ public class GamePanel extends JPanel {
         if (dragStart == null || dragEnd == null) return;
         
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(70, 130, 180));
-        g2d.setStroke(new BasicStroke(3));
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        // Draw the main drag line
-        g2d.drawLine(dragStart.x, dragStart.y, dragEnd.x, dragEnd.y);
+        // Draw the connecting lines between selected letters
+        if (dragPath.size() > 1) {
+            // Draw the solid path between letters
+            g2d.setColor(Color.RED);
+            g2d.setStroke(new BasicStroke(5));
+            
+            // Draw lines between consecutive points
+            for (int i = 0; i < dragPath.size() - 1; i++) {
+                Point p1 = dragPath.get(i);
+                Point p2 = dragPath.get(i + 1);
+                g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
+            }
+        }
+        
+        // Draw the current drag line to cursor
+        if (dragPath.size() > 0) {
+            Point lastPoint = dragPath.get(dragPath.size() - 1);
+            g2d.setColor(new Color(255, 0, 0, 150)); // Semi-transparent red
+            g2d.setStroke(new BasicStroke(4));
+            g2d.drawLine(lastPoint.x, lastPoint.y, dragEnd.x, dragEnd.y);
+        }
         
         // Draw the path points with a glowing effect
         for (Point p : dragPath) {
             // Draw outer glow
-            g2d.setColor(new Color(70, 130, 180, 100));
+            g2d.setColor(new Color(255, 0, 0, 100));
             g2d.fillOval(p.x - 12, p.y - 12, 24, 24);
             // Draw middle glow
-            g2d.setColor(new Color(70, 130, 180, 150));
+            g2d.setColor(new Color(255, 0, 0, 150));
             g2d.fillOval(p.x - 8, p.y - 8, 16, 16);
             // Draw inner point
-            g2d.setColor(new Color(70, 130, 180, 200));
+            g2d.setColor(new Color(255, 0, 0, 200));
             g2d.fillOval(p.x - 4, p.y - 4, 8, 8);
         }
     }
@@ -165,6 +183,9 @@ public class GamePanel extends JPanel {
         letterButtons.clear();
         selectedLetters.setLength(0);
         visitedButtons.clear();
+        dragPath.clear();
+        dragStart = null;
+        dragEnd = null;
 
         int radius = 150;
         int centerX = letterCirclePanel.getWidth() / 2;
@@ -245,13 +266,14 @@ public class GamePanel extends JPanel {
         @Override
         public void mousePressed(MouseEvent e) {
             if (!visitedButtons.contains(button)) {
-                dragStart = new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2);
-                dragEnd = dragStart;
+                Point center = new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2);
+                dragStart = center;
+                dragEnd = center;
                 dragPath.clear();
-                dragPath.add(dragStart);
+                dragPath.add(center);
                 visitedButtons.add(button);
                 selectedLetters.append(letter);
-                button.setBackground(new Color(70, 130, 180));
+                button.setBackground(Color.RED);
                 updateQuestionDisplay();
                 letterCirclePanel.repaint();
             }
@@ -259,13 +281,17 @@ public class GamePanel extends JPanel {
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            dragEnd = e.getPoint();
-            letterCirclePanel.repaint();
+            if (dragStart != null) {
+                dragEnd = e.getPoint();
+                letterCirclePanel.repaint();
+            }
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
             dragPath.clear();
+            dragStart = null;
+            dragEnd = null;
             letterCirclePanel.repaint();
         }
 
@@ -275,7 +301,8 @@ public class GamePanel extends JPanel {
                 visitedButtons.add(button);
                 selectedLetters.append(letter);
                 button.setBackground(new Color(70, 130, 180));
-                dragPath.add(new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2));
+                Point center = new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2);
+                dragPath.add(center);
                 updateQuestionDisplay();
                 letterCirclePanel.repaint();
             }
