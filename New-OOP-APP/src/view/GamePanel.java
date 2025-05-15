@@ -16,7 +16,6 @@ public class GamePanel extends JPanel {
     private GameController controller;
     private JLabel questionLabel;
     private JPanel letterCirclePanel;
-    private JTextField answerField;
     private List<RoundButton> letterButtons;
     private StringBuilder selectedLetters;
     private Set<RoundButton> visitedButtons;
@@ -331,44 +330,6 @@ public class GamePanel extends JPanel {
         g2d.setStroke(new BasicStroke(3));
         g2d.drawOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
     }
-
-    private void onSubmit(java.awt.event.ActionEvent e) {
-        String userAnswer = selectedLetters.toString();
-        if (controller.checkAnswer(userAnswer)) {
-            feedbackLabel.setText("Correct!");
-            feedbackLabel.setForeground(Color.GREEN);
-            feedbackLabel.setVisible(true);
-            
-            // Award points to the player
-            controller.awardPoints(10); // Award 10 points for correct answer
-            
-            // Update score display
-            updateScoreDisplay();
-            
-            // Delay next level by 1 second
-            Timer timer = new Timer(1000, evt -> {
-                startLevel(controller.getNextLevel());
-                feedbackLabel.setVisible(false); // Hide feedback after next level starts
-            });
-            timer.setRepeats(false);
-            timer.start();
-        } else {
-            feedbackLabel.setText("Incorrect. Try again.");
-            feedbackLabel.setForeground(Color.RED);
-            feedbackLabel.setVisible(true);
-            
-            // Optional: penalize wrong answers
-            controller.awardPoints(-2); // Deduct 2 points for wrong answer
-            updateScoreDisplay();
-            
-            // Hide feedback after 1.5 seconds
-            Timer timer = new Timer(1500, evt -> {
-                feedbackLabel.setVisible(false);
-            });
-            timer.setRepeats(false);
-            timer.start();
-        }
-    }
     
     // Method to update the score display
     private void updateScoreDisplay() {
@@ -516,8 +477,12 @@ public class GamePanel extends JPanel {
                     feedbackLabel.setVisible(true);
                     feedbackLabel.setFont(new Font("Arial", Font.BOLD, 14));
                     
-                    // Optional: penalize wrong answers
-                    controller.awardPoints(-2); // Deduct 2 points for wrong answer
+                    // Only deduct points if score is above zero
+                    int currentScore = controller.getPlayer().getScore();
+                    if (currentScore > 0) {
+                        int deduction = Math.min(2, currentScore);
+                        controller.awardPoints(-deduction);
+                    }
                     updateScoreDisplay();
                     
                     // Hide feedback after 1.5 seconds

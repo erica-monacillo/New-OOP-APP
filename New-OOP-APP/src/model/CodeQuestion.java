@@ -7,18 +7,15 @@ import java.util.ArrayList;
 public class CodeQuestion {
     private String questionText;
     private String answer;
-    private String letters;
-    private String question;
 
     public CodeQuestion(String questionText, String answer) {
         this.questionText = questionText;
         this.answer = answer;
     }
 
-    public CodeQuestion(String question, String answer, String letters) {
-        this.question = question;
+    public CodeQuestion(String questionText, String answer, String letters) {
+        this.questionText = questionText;
         this.answer = answer;
-        this.letters = letters;
     }
 
     public String getQuestionText() {
