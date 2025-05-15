@@ -45,12 +45,15 @@ public class GamePanel extends JPanel {
         scoreLabel.setFont(new Font("Arial", Font.BOLD, 14));
         scoreLabel.setForeground(Color.LIGHT_GRAY);
         scoreLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
         questionLabel = new JLabel("", SwingConstants.CENTER);
-        questionLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        questionLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
         questionLabel.setForeground(Color.WHITE);
         questionLabel.setOpaque(true);
         questionLabel.setBackground(new Color(50, 50, 50));
         questionLabel.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180), 2));
+        questionLabel.setVerticalAlignment(SwingConstants.CENTER);
+        questionLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(new Color(50, 50, 50));
@@ -201,9 +204,28 @@ public class GamePanel extends JPanel {
     private void updateQuestionDisplay() {
         CodeQuestion question = controller.getCurrentQuestion();
         String questionText = question.getQuestionText();
-        // Replace underscores with selected letters in order
-        String displayText = questionText.replace("____", selectedLetters.toString());
-        questionLabel.setText("<html><pre>" + displayText + "</pre></html>");
+        
+        // Replace all underscores with selected letters or show blank lines
+        String displayText = questionText;
+        int underscoreIndex = displayText.indexOf("____");
+        if (underscoreIndex != -1) {
+            String selectedText = selectedLetters.toString();
+            if (selectedText.isEmpty()) {
+                // Show blank lines when no letters are selected
+                displayText = displayText.substring(0, underscoreIndex) + 
+                             "<span style='color: #666666; border-bottom: 2px solid #666666;'>____</span>" + 
+                             displayText.substring(underscoreIndex + 4);
+            } else {
+                // Show selected letters with a different style
+                displayText = displayText.substring(0, underscoreIndex) + 
+                             "<span style='color: #00ff00; font-weight: bold;'>" + selectedText + "</span>" + 
+                             displayText.substring(underscoreIndex + 4);
+            }
+        }
+        
+        // Format the text with proper spacing and line breaks
+        displayText = displayText.replace("\n", "<br>");
+        questionLabel.setText("<html><pre style='color: white; font-family: monospace; font-size: 14px;'>" + displayText + "</pre></html>");
         answerField.setText(selectedLetters.toString());
         letterCirclePanel.repaint();
     }
@@ -256,6 +278,7 @@ public class GamePanel extends JPanel {
 
         letterCirclePanel.revalidate();
         letterCirclePanel.repaint();
+        updateQuestionDisplay(); // Update display after setting up new letters
     }
 
     private void drawLetterCircle(Graphics g) {
