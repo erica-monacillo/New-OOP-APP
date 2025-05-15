@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.net.URL;
+import java.io.IOException;
 
 public class GamePanel extends JPanel {
     private GameController controller;
@@ -28,18 +32,136 @@ public class GamePanel extends JPanel {
     private List<Point> dragPath = new ArrayList<>();
     private boolean isMousePressed = false;
     private boolean selectionActive = false;  
+    
+    // Background related variables
+    private Image backgroundImage;
+    private boolean useImageBackground = false;
+    private Color gradientStartColor = new Color(20, 20, 40);
+    private Color gradientEndColor = new Color(40, 40, 80);
 
     public GamePanel(GameController controller) {
         this.controller = controller;
         this.letterButtons = new ArrayList<>();
         this.selectedLetters = new StringBuilder();
         this.visitedButtons = new HashSet<>();
+        loadBackgroundImage();
         setupUI();
+    }
+    
+    // Method to load background image
+    private void loadBackgroundImage() {
+        try {
+            // Try multiple possible paths for the background image
+            URL imageUrl = null;
+            
+            // Option 1: Try direct path from classpath root
+            imageUrl = getClass().getClassLoader().getResource("assets/background.jpeg");
+            
+            // Option 2: Try with full package path
+            if (imageUrl == null) {
+                imageUrl = getClass().getClassLoader().getResource("view/assets/background.jpeg");
+            }
+            
+            // Option 3: Try from the current class's package
+            if (imageUrl == null) {
+                imageUrl = getClass().getResource("/assets/background.jpeg");
+            }
+            
+            // Option 4: Try loading from file system instead of resources
+            if (imageUrl == null) {
+                File file = new File("assets/background.jpeg");
+                if (file.exists()) {
+                    imageUrl = file.toURI().toURL();
+                }
+            }
+            
+            // Option 5: Try looking in src/assets
+            if (imageUrl == null) {
+                File file = new File("src/assets/background.jpeg");
+                if (file.exists()) {
+                    imageUrl = file.toURI().toURL();
+                }
+            }
+            
+            if (imageUrl != null) {
+                backgroundImage = ImageIO.read(imageUrl);
+                useImageBackground = true;
+                System.out.println("Background image loaded successfully from: " + imageUrl);
+            } else {
+                System.err.println("Background image not found. Tried multiple paths including assets/background.jpeg");
+                useImageBackground = false;
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading background image: " + e.getMessage());
+            e.printStackTrace();
+            useImageBackground = false;
+        }
+    }
+    
+    // Method to set custom background image
+    public void setBackgroundImage(Image image) {
+        this.backgroundImage = image;
+        this.useImageBackground = true;
+        repaint();
+    }
+    
+    // Method to set gradient colors
+    public void setGradientColors(Color startColor, Color endColor) {
+        this.gradientStartColor = startColor;
+        this.gradientEndColor = endColor;
+        this.useImageBackground = false;
+        repaint();
+    }
+    
+    // Override paintComponent to draw the background
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        
+        // Enable antialiasing for smoother graphics
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        int width = getWidth();
+        int height = getHeight();
+        
+        // Draw background
+        if (useImageBackground && backgroundImage != null) {
+            // Scale image to fit while maintaining aspect ratio
+            int imgWidth = backgroundImage.getWidth(null);
+            int imgHeight = backgroundImage.getHeight(null);
+            float imgRatio = (float)imgWidth/imgHeight;
+            float panelRatio = (float)width/height;
+            
+            if (panelRatio > imgRatio) {
+                // Panel is wider than image (relative to height)
+                int scaledWidth = (int)(height * imgRatio);
+                int x = (width - scaledWidth) / 2;
+                g2d.drawImage(backgroundImage, x, 0, scaledWidth, height, this);
+            } else {
+                // Panel is taller than image (relative to width)
+                int scaledHeight = (int)(width / imgRatio);
+                int y = (height - scaledHeight) / 2;
+                g2d.drawImage(backgroundImage, 0, y, width, scaledHeight, this);
+            }
+        } else {
+            // Draw gradient background
+            GradientPaint gradient = new GradientPaint(
+                0, 0, gradientStartColor,
+                0, height, gradientEndColor
+            );
+            g2d.setPaint(gradient);
+            g2d.fillRect(0, 0, width, height);
+        }
+        
+        // Add a semi-transparent overlay to make UI elements more visible
+        g2d.setColor(new Color(0, 0, 0, 150));
+        g2d.fillRect(0, 0, width, height);
     }
 
     private void setupUI() {
         setLayout(new BorderLayout());
-        setBackground(Color.DARK_GRAY);
+        setOpaque(false); // Make panel transparent to show background
 
         scoreLabel = new JLabel("Score: " + score, SwingConstants.LEFT);
         scoreLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -50,17 +172,16 @@ public class GamePanel extends JPanel {
         questionLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
         questionLabel.setForeground(Color.WHITE);
         questionLabel.setOpaque(true);
-        questionLabel.setBackground(new Color(50, 50, 50));
+        questionLabel.setBackground(new Color(50, 50, 50, 200)); // Semi-transparent
         questionLabel.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180), 2));
         questionLabel.setVerticalAlignment(SwingConstants.CENTER);
         questionLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
-        // Make question label wrap text
         questionLabel.setPreferredSize(new Dimension(400, 100));
         questionLabel.setMinimumSize(new Dimension(200, 50));
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(new Color(50, 50, 50));
+        topPanel.setBackground(new Color(50, 50, 50, 200)); // Semi-transparent
         topPanel.add(scoreLabel, BorderLayout.WEST);
         topPanel.add(questionLabel, BorderLayout.CENTER);
 
@@ -78,6 +199,12 @@ public class GamePanel extends JPanel {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                
+                // Semi-transparent background for the letter circle
+                g2d.setColor(new Color(30, 30, 30, 180));
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                
                 drawLetterCircle(g);
                 drawSelectionLines(g);
             }
@@ -85,7 +212,6 @@ public class GamePanel extends JPanel {
             @Override
             public void doLayout() {
                 super.doLayout();
-                // Recalculate positions when the panel is resized
                 if (!letterButtons.isEmpty()) {
                     setupLetterCircle(controller.getCurrentQuestion().getAvailableLetters());
                 }
@@ -93,7 +219,7 @@ public class GamePanel extends JPanel {
         };
         letterCirclePanel.setPreferredSize(new Dimension(400, 400));
         letterCirclePanel.setLayout(null);
-        letterCirclePanel.setBackground(new Color(30, 30, 30));
+        letterCirclePanel.setOpaque(false);
         add(letterCirclePanel, BorderLayout.CENTER);
 
         letterCirclePanel.addMouseListener(new MouseAdapter() {
@@ -107,7 +233,7 @@ public class GamePanel extends JPanel {
 
         // Answer field and submit button at the bottom
         JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.setBackground(new Color(30, 30, 30));
+        bottomPanel.setBackground(new Color(30, 30, 30, 200)); // Semi-transparent
 
         answerField = new JTextField();
         answerField.setEditable(false);
@@ -128,13 +254,12 @@ public class GamePanel extends JPanel {
         clearButton.setBackground(new Color(100, 100, 100));
         clearButton.setForeground(Color.WHITE);
         clearButton.setFocusPainted(false);
-        clearButton.addActionListener(evt -> {
-            resetSelection();
-        });
+        clearButton.addActionListener(evt -> resetSelection());
         bottomPanel.add(clearButton, BorderLayout.WEST);
 
         add(bottomPanel, BorderLayout.SOUTH);
     }
+
 
     private void resetSelection() {
         selectedLetters.setLength(0);
@@ -350,6 +475,15 @@ public class GamePanel extends JPanel {
         int maxRadius = Math.min(panelWidth, panelHeight) / 2 - 30; // Leave some margin
         radius = Math.min(radius, maxRadius);
         
+        // Draw a glow effect around the circle
+        for (int i = 0; i < 5; i++) {
+            int alpha = 50 - i * 10;
+            g2d.setColor(new Color(70, 130, 180, alpha));
+            g2d.setStroke(new BasicStroke(3 + i));
+            g2d.drawOval(centerX - radius - i, centerY - radius - i, (radius + i) * 2, (radius + i) * 2);
+        }
+        
+        // Draw the main circle
         g2d.setColor(new Color(70, 130, 180));
         g2d.setStroke(new BasicStroke(3));
         g2d.drawOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
@@ -412,6 +546,15 @@ public class GamePanel extends JPanel {
             }
             
             g2.fillOval(0, 0, getWidth(), getHeight());
+            
+            // Add a glow effect to the button
+            if (visitedButtons.contains(this) || getModel().isRollover()) {
+                for (int i = 0; i < 3; i++) {
+                    g2.setColor(new Color(255, 255, 255, 30 - i * 10));
+                    g2.setStroke(new BasicStroke(1 + i));
+                    g2.drawOval(i, i, getWidth() - i * 2, getHeight() - i * 2);
+                }
+            }
             
             // Draw text
             FontMetrics metrics = g2.getFontMetrics(getFont());
