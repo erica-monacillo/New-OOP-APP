@@ -22,7 +22,6 @@ public class GamePanel extends JPanel {
     private JLabel feedbackLabel;
     private JLabel scoreLabel;
     private int score = 0;
-    private Point dragStart;
     private Point dragEnd;
     private boolean isDragging = false;
     private List<Point> dragPath = new ArrayList<>();
@@ -129,7 +128,6 @@ public class GamePanel extends JPanel {
         selectionActive = false;
         isMousePressed = false;
         isDragging = false;
-        dragStart = null;
         dragEnd = null;
         resetAllButtonColors();
         letterCirclePanel.repaint();
@@ -214,7 +212,6 @@ public class GamePanel extends JPanel {
         selectedLetters.setLength(0);
         visitedButtons.clear();
         dragPath.clear();
-        dragStart = null;
         dragEnd = null;
         isMousePressed = false;
         isDragging = false;
@@ -330,7 +327,6 @@ public class GamePanel extends JPanel {
             
             // Update drag points
             Point center = new Point(button.getX() + button.getWidth()/2, button.getY() + button.getHeight()/2);
-            dragStart = center;
             dragEnd = center;
             dragPath.add(center);
             
