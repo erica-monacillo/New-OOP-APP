@@ -27,6 +27,7 @@ public class GamePanel extends JPanel {
     private boolean isDragging = false;
     private List<Point> dragPath = new ArrayList<>();
     private boolean isMousePressed = false;
+    private boolean selectionActive = false;  
 
     public GamePanel(GameController controller) {
         this.controller = controller;
@@ -71,9 +72,7 @@ public class GamePanel extends JPanel {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 drawLetterCircle(g);
-                if (isDragging && dragStart != null && dragEnd != null) {
-                    drawDragLine(g);
-                }
+                drawSelectionLines(g);  // Always draw the selection lines
             }
         };
         letterCirclePanel.setPreferredSize(new Dimension(400, 400));
@@ -114,17 +113,26 @@ public class GamePanel extends JPanel {
         clearButton.setForeground(Color.WHITE);
         clearButton.setFocusPainted(false);
         clearButton.addActionListener(evt -> {
-            selectedLetters.setLength(0);
-            visitedButtons.clear();
-            answerField.setText("");
-            feedbackLabel.setText("");
-            dragPath.clear();
-            letterCirclePanel.repaint();
-            resetAllButtonColors();
+            resetSelection();
         });
         bottomPanel.add(clearButton, BorderLayout.WEST);
 
         add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    private void resetSelection() {
+        selectedLetters.setLength(0);
+        visitedButtons.clear();
+        answerField.setText("");
+        feedbackLabel.setText("");
+        dragPath.clear();
+        selectionActive = false;
+        isMousePressed = false;
+        isDragging = false;
+        dragStart = null;
+        dragEnd = null;
+        resetAllButtonColors();
+        letterCirclePanel.repaint();
     }
 
     private void resetAllButtonColors() {
@@ -136,14 +144,13 @@ public class GamePanel extends JPanel {
     private void finishSelection() {
         isMousePressed = false;
         isDragging = false;
-        dragPath.clear();
-        dragStart = null;
         dragEnd = null;
+        selectionActive = true;
         letterCirclePanel.repaint();
     }
 
-    private void drawDragLine(Graphics g) {
-        if (dragStart == null || dragEnd == null) return;
+    private void drawSelectionLines(Graphics g) {
+        if (dragPath.isEmpty()) return;
         
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -162,8 +169,8 @@ public class GamePanel extends JPanel {
             }
         }
         
-        // Draw the current drag line to cursor
-        if (dragPath.size() > 0) {
+        // Draw the current drag line to cursor (only when actively dragging)
+        if (isDragging && dragPath.size() > 0 && dragEnd != null) {
             Point lastPoint = dragPath.get(dragPath.size() - 1);
             g2d.setColor(new Color(255, 0, 0, 150)); // Semi-transparent red
             g2d.setStroke(new BasicStroke(4));
@@ -211,6 +218,7 @@ public class GamePanel extends JPanel {
         dragEnd = null;
         isMousePressed = false;
         isDragging = false;
+        selectionActive = false;
 
         int radius = 150;
         int centerX = letterCirclePanel.getWidth() / 2;
@@ -309,15 +317,13 @@ public class GamePanel extends JPanel {
 
         @Override
         public void mousePressed(MouseEvent e) {
+            if (selectionActive) {
+                resetSelection();
+            }
+            
             // Start the selection process
             isMousePressed = true;
             isDragging = true;
-            
-            // Clear previous selection
-            selectedLetters.setLength(0);
-            visitedButtons.clear();
-            dragPath.clear();
-            resetAllButtonColors();
             
             // Add this button as first selection
             selectButton();
@@ -345,15 +351,14 @@ public class GamePanel extends JPanel {
                 
                 updateQuestionDisplay();
                 letterCirclePanel.repaint();
-            } else if (!isMousePressed) {
-                // Just hover effect when not pressed
+            } else if (!isMousePressed && !visitedButtons.contains(button)) {
                 button.setBackground(new Color(100, 100, 100));
             }
         }
         
         @Override
         public void mouseExited(MouseEvent e) {
-            if (!visitedButtons.contains(button) && !isMousePressed) {
+            if (!visitedButtons.contains(button)) {
                 button.setBackground(new Color(50, 50, 50));
             }
         }
