@@ -44,12 +44,6 @@ public class LevelSelectPanel extends JPanel {
             // Style buttons differently based on completion status
             styleLevelButton(levelButtons[i], level);
 
-            levelButtons[i].addActionListener(e -> {
-                controller.startLevel(level);
-                ((GameFrame)SwingUtilities.getWindowAncestor(this)).showGameScreen();
-            });
-
-            levelsPanel.add(levelButtons[i]);
         }
 
         JScrollPane scrollPane = new JScrollPane(levelsPanel);
