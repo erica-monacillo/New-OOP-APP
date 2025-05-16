@@ -15,6 +15,18 @@ public class GameController {
         
         // Easy Questions (1-10)
         questions.add(new CodeQuestion("What access modifier allows access within the same package? ____", "default"));
+        questions.add(new CodeQuestion("What keyword is used to create a subclass? ____ class MyClass extends BaseClass {}", "extends"));
+        questions.add(new CodeQuestion("What annotation is used to override a method? @____", "Override"));
+        questions.add(new CodeQuestion("What keyword is used to define a constant in Java? ____ int MAX = 100;", "final"));
+        questions.add(new CodeQuestion("What keyword is used to handle exceptions? ____ (IOException e) { ... }", "catch"));
+        questions.add(new CodeQuestion("What keyword is used to inherit a class? public class Dog ____ Animal {}", "extends"));
+        questions.add(new CodeQuestion("How do you start a for-each loop? for(____ item : list) { }", "Type"));
+        questions.add(new CodeQuestion("What keyword is used to define an interface implementation? class MyClass ____ MyInterface {}", "implements"));
+        questions.add(new CodeQuestion("How do you define a method that doesn't return anything? public ____ void run() {}", "static"));
+        questions.add(new CodeQuestion("What keyword is used to prevent method overriding? public ____ void show() {}", "final"));
+        questions.add(new CodeQuestion("What access modifier allows visibility only within the same package? ____ class MyClass {}", "default"));
+        questions.add(new CodeQuestion("What is used to indicate a method throws an exception? public void read() ____ IOException { }", "throws"));
+
         questions.add(new CodeQuestion("What keyword is used to define a constant in Java? ____", "final"));
         questions.add(new CodeQuestion("What primitive type is used for decimal numbers? ____", "double"));
         questions.add(new CodeQuestion("What data structure uses LIFO order? ____", "stack"));
@@ -25,6 +37,21 @@ public class GameController {
         questions.add(new CodeQuestion("What keyword is used to exit a loop immediately? ____", "break"));
         questions.add(new CodeQuestion("What interface does a class implement to be comparable? ____", "comparable"));
         
+        questions.add(new CodeQuestion("What keyword is used to define a class? ____ MyClass {}", "class"));
+        questions.add(new CodeQuestion("Which keyword creates an object in Java? MyClass obj = ____ MyClass();", "new"));
+        questions.add(new CodeQuestion("What keyword is used to exit a loop or method early? ____;", "break"));
+        questions.add(new CodeQuestion("How do you start a switch statement? ____ (value) { ... }", "switch"));
+        questions.add(new CodeQuestion("What keyword is used to compare values in an if statement? if(x ____ y)", "=="));
+        questions.add(new CodeQuestion("What modifier allows access from anywhere? ____ int count;", "public"));
+        questions.add(new CodeQuestion("Which loop executes at least once? ____ { ... } while(condition);", "do"));
+        questions.add(new CodeQuestion("How do you define a constructor in Java? public ____() { }", "ClassName"));
+        questions.add(new CodeQuestion("Which collection class allows duplicates and maintains insertion order? ____<String> list = new ArrayList<>();", "List"));
+        questions.add(new CodeQuestion("Which data structure stores key-value pairs? ____<String, Integer> map = new HashMap<>();", "Map"));
+        questions.add(new CodeQuestion("What keyword is used to refer to the current object? ____", "this"));
+        questions.add(new CodeQuestion("What keyword is used to inherit from an abstract class? public class Cat ____ Animal { }", "extends"));
+        questions.add(new CodeQuestion("What keyword is used to define a method without a body in an interface? ____ void run();", "default"));
+        questions.add(new CodeQuestion("What annotation is used for unit testing methods in JUnit? @____", "Test"));
+
         // Medium Questions (11-20)
         questions.add(new CodeQuestion("What keyword allows a variable to be accessed without an instance? ____", "static"));
         questions.add(new CodeQuestion("What exception occurs when dividing by zero? ____", "arithmeticexception"));
@@ -48,7 +75,6 @@ public class GameController {
         questions.add(new CodeQuestion("What garbage collector algorithm is default in Java 11? ____", "g1"));
         questions.add(new CodeQuestion("What Java feature allows type-safe enumerations? ____", "enum"));
         questions.add(new CodeQuestion("What annotation indicates a method is deprecated? ____", "deprecated"));
-
         player = new Player("Player 1");
     }
 
